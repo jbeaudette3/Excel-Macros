@@ -1,0 +1,103 @@
+Sub active_filters_button()
+'--------------------------------------------------------------------------------
+' Last Edit Date: 2023.06.07
+'--------------------------------------------------------------------------------
+' -- Functionality
+' Currently works on ranges only, not tables
+' Adding usage for tables: in-progress
+'
+' To use: Make sure Active Cell is inside the range.
+'         Make sure the range has filters activated.
+'         This will work even if there are multiple ranges on the page
+'            (as long as the active cell is inside the range)
+'
+' Returns:
+'         Messagebox
+'            Column 1     Distinct, non-hidden values in this column
+'            Column 2     Distinct, non-hidden values in this column
+'            ...          ...
+'            Column N     Distinct, non-hidden values in this column
+'
+' Section:
+' 1. Declare variables
+'       - (nothing for user to modify)
+'       a. Using late-binding dictionary so the user doesn't have to change any settings.
+' 2. With the active sheet, iterate through all filters.
+'       - if there are no filters active, sub will exit.
+'    If the filter is on for a column:
+'       - Get the header and all unique, visible values.
+' 3. Join, print to user in messagebox.
+'       a. if there are no active filters, exit.
+'
+'--------------------------------------------------------------------------------
+' 1.
+Dim wsh As Worksheet
+Dim addr as Variant
+Dim startCol as Variant
+Dim startRow as Variant
+Dim endCol as Variant
+Dim endRow As Variant
+Dim newCol As Variant
+Dim newRangeStr As String
+Dim newRange As Range
+Dim filters As Variant
+Dim f_count As Integer
+Dim header As Variant
+
+' 1a. - late binding dictionaries
+Dim d As Object
+Dim d_final As Object
+Set d = CreateObject("Scripting.Dictionary")
+Set d_final = CreateObject("Scripting.Dictionary")
+
+Set wsh = ActiveSheet
+
+If wsh.AutoFilterMode = False Then Exit Sub
+
+addr = wsh.AutoFilter.Range.Address
+startCol = Split(addr, "$")(1)
+startRow = Left(Split(addr, "$")(2), 1)
+endCol = Split(addr, "$")(3)
+endRow = Split(addr, "$")(4)
+f_count = wsh.AutoFilter.filters.Count
+
+' 2.
+With wsh.AutoFilter
+    For f = 1 To f_count
+        If .filters(f).On Then
+            header = .Range(f)
+            newCol = Split(Cells(, Range(startCol & 1).column + f - 1).Address, "$")(1)
+            newRangeStr = newCol & (startRow + 1) & ":" & newCol & endRow
+            Set newRange = Range(newRangeStr).SpecialCells(xlCellTypeVisible)
+            
+            ' add to dictionary if not exists
+            ' force value to be a string
+            Dim r As Variant
+            For Each r In newRange
+                r = CStr(r)
+                If d.Exists(r) = False Then
+                    d.Add r, 1
+                End If
+            Next r
+            
+            filters = Join(d.Keys, ",")
+            d_final.Add header, filters
+            
+            filters = Empty
+            Set d = CreateObject("Scripting.Dictionary")
+        End If
+    Next f
+End With
+
+' 3.
+Dim print_str As String
+For Each key In d_final
+    print_str = print_str & key & vbTab & d_final(key) & vbCrLf
+Next key
+
+' 3a.
+If d_final.Count = 0 Then Exit Sub
+
+MsgBox print_str
+
+End Sub
