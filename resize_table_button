@@ -1,0 +1,20 @@
+Sub resize_table_button()
+'
+' Functionality:
+'    When data gets deleted from Excel table,
+'    place cursor at the lat row with data
+'    Macro 'zips' up table to cursor location, resizing table
+'
+    Dim tbl, tblRng, tblStart, tblEndCol, tblEndRow As Variant
+    
+    tbl = ActiveCell.ListObject.Name
+    tblRng = ActiveSheet.ListObjects(tbl).Range.Address
+    
+    tblStart = Split(tblRng, ":")(0)
+    tblEndCol = Split(tblRng, "$")(3)
+    
+    tblEndRow = ActiveCell.Row
+    
+    ActiveSheet.ListObjects(tbl).Resize Range(tblStart & ":" & tblEndCol & tblEndRow)
+    
+End Sub
