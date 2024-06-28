@@ -1,0 +1,164 @@
+Sub csv_button()
+'
+' Jeff Beaudette
+' 2023.09.18
+'
+' To run: Select top-most item in list.
+' Values must be in one column only.
+'       (no multi-column values allowed.)
+' Make sure the column to the right is empty.
+'    - This macro will check for you anyway.
+'
+' Example of functionality:
+' ABC123
+' ABC456
+' DEF123
+'
+' Returns:
+'     Item list: ABC123;ABC456;DEF123
+'       or
+'     Pfx: ABC;DEF
+'
+' Returns item list by default.
+' Prefix-only list becomes an option if there are more than 'max_input' items.
+'
+' 1. Variables.
+'    - max_input - Default 1000. This is dependant on Toad's input limit.
+'    - msg1 - First pop-up message if paste area is not empty.
+'    - msg2 - Second pop-up message if there are more than 'max_input' items.
+'
+' 2. If the selected area is empty, or row below it, exit.
+'    - Assumes macro was run by mistake, or only 1 item in the list
+'
+' 3. If paste area is not empty, prompt user.
+'    - Do they want to overwrite values?
+'
+' 4. If items in list are numbers (like Account numbers), make a list.
+'    - otherwise (macro assumes items), if number of items in list are less than max_input, make list.
+'    - if number of items in list is more than max_input:
+'         - prompt user if they want item list or prefix-only list.
+'
+' 5. Function to create list of 'max_input' length,
+'       offset down 1 row
+'       continue until all items are included
+'
+' 6. Function to create list of unique prefixes from original list
+'
+' Notes:
+' - if there are more than 1000 prefixes, only a single list is returned.
+'   (If you're going to query for more than 1000 prefixes,
+'    maybe reconsider your analytical approach.)
+'__________________________________________________________
+
+' 1.
+Dim max_input As Integer
+Dim msg1A As String
+Dim msg1B As String
+Dim msg2 As String
+Dim columnLetter As String
+Dim response As Integer
+Dim response2 As Integer
+Dim val As Variant
+Dim startRange As Range
+Dim pasteRange As Range
+Dim endRange As Range
+Dim itemCount As Variant
+Dim pfxCount As Integer
+Dim delim As String
+Set startRange = Range(Selection, Selection.End(xlDown))
+Set pasteRange = Range(Split(startRange.Offset(0, 1).Address, ":")(0))
+Set endRange = Range(Split(startRange.Address, ":")(0)).Offset(0, 1)
+itemCount = Format(startRange.Count, "#,##0")
+
+max_input = 1000
+delim = ";"
+msg1A = "This macro may overwrite values in column "
+msg1B = ". Continue?"
+msg2 = "There are more than " & Format(max_input, "#,##0") & " items." & vbCrLf _
+& "    (" & itemCount & " items in list." & ")" & vbCrLf
+
+
+' 2.
+If IsEmpty(startRange) Or IsEmpty(startRange.Offset(1, 0)) Then
+    Exit Sub
+End If
+
+' 3.
+If WorksheetFunction.CountA(startRange.Offset(0, 1)) <> 0 Then
+    columnLetter = Split(pasteRange.Address, "$")(1)
+    response = MsgBox(msg1A & columnLetter & msg1B, vbYesNo, Title:="Overwrite?")
+    If response = 7 Then
+        Exit Sub
+    End If
+End If
+
+' 4.
+If IsNumeric(startRange(1).Value) = True Then
+    GoTo fun_list
+ElseIf itemCount < max_input Then
+    GoTo fun_list
+Else:
+    On Error Resume Next
+    response2 = InputBox(msg2 & vbCrLf & _
+                        "1 = Items" & vbCrLf & _
+                        "2 = Prefixes", Title:="Items or Prefixes?")
+    If response2 = 1 Then
+        On Error GoTo 0
+        GoTo fun_list
+    ElseIf response2 = 2 Then
+        On Error GoTo 0
+        GoTo fun_pfx
+    ElseIf response2 = "" Then
+        On Error GoTo -1
+        Exit Sub
+    Else: Exit Sub
+    End If
+End If
+
+' 5.
+fun_list:
+    Dim i As Long
+    i = 0
+    For Each c In startRange
+        If i = max_input Then
+            pasteRange = val
+            val = ""
+            i = 0
+            Set pasteRange = pasteRange.Offset(1, 0)
+        End If
+        If val = "" Then
+            val = c
+        Else
+            val = val & delim & c
+        End If
+        i = i + 1
+    Next c
+    pasteRange = val
+    endRange.Select
+    Exit Sub
+    
+' 6.
+fun_pfx:
+    val = ""
+    pfxCount = 0
+    Dim d As Object
+    Set d = CreateObject("Scripting.Dictionary")
+    Dim pfx As Variant
+    For Each c In startRange
+        pfx = Left(c, 3)
+        If d.Exists(pfx) = False Then
+            d.Add pfx, 1
+            pfxCount = pfxCount + 1
+            If val = "" Then
+                val = pfx
+            Else
+                val = val & delim & pfx
+            End If
+        End If
+    Next c
+    pasteRange = val
+    endRange.Select
+    MsgBox Format(pfxCount, "#,##0") & " Prefix(es) in this list.", Title:="Prefix List"
+    Exit Sub
+
+End Sub
