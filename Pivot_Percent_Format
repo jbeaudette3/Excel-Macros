@@ -1,0 +1,52 @@
+Sub pivot_percent_format()
+'
+' Jeff Beaudette
+' 2023.05.22
+'
+' To run: Select values to be changed.
+' Modifies values in place/ overwrites pivot values
+'
+' Example of functionality:
+' -0.1--0.09  ==>  -10% to -9%
+' >0.1        ==>  >10%
+' 0-0.01      ==>   0% to 1%
+'
+' 1. Variables
+'    - selectedRange - Select the cells you wish to modify
+'    - pc - pasteCell
+'    - tmp - temp variable
+' 2. If selected area is empty, exit.
+'    - assumes macro was run by accident.
+' 3. Split, multiply, combine, format with trailing "%"
+'__________________________________________________________
+
+' 1.
+Dim selectedRange As Range
+Dim pc As Range
+Dim tmp As Variant
+
+Set selectedRange = Selection
+
+' 2.
+If IsEmpty(selectedRange) Then
+    Exit Sub
+End If
+
+' 3.
+For Each c In selectedRange
+    Set pc = c
+    
+    If Left(c, 1) = ">" Or Left(c, 1) = "<" Then
+        pc.Value = Left(c, 1) & (Right(c, Len(c) - 1) * 100) & "%"
+    Else
+        If Left(c, 1) = "-" Then
+            tmp = WorksheetFunction.Substitute(c, "-", " ", 2)
+        Else
+            tmp = WorksheetFunction.Substitute(c, "-", " ", 1)
+        End If
+        
+        pc.Value = Split(tmp, " ")(0) * 100 & "% to " & Split(tmp, " ")(1) * 100 & "%"
+    End If
+Next
+
+End Sub
