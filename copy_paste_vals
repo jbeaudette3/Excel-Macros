@@ -1,0 +1,10 @@
+Sub copy_paste_vals()
+'
+' 2023.09.21
+' because I'm doing a larger analysis and this is faster than keyboard shortcuts
+
+    Selection.Copy
+    Selection.PasteSpecial Paste:=xlPasteValues
+    Application.CutCopyMode = False
+    ActiveCell.Offset(0, 0).Select
+End Sub
