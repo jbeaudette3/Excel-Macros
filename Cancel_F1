@@ -1,0 +1,7 @@
+‘ -> Microsoft Excel Objects
+‘ ----> This Workbook
+'__________________________________________________________
+‘ cancels F1 
+Sub Workbook_Open()
+    Application.OnKey "{F1}", ""
+End Sub
