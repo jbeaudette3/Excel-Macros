@@ -1,0 +1,33 @@
+Sub pivot_style_format()
+'
+'
+    Dim myCurFormat As String
+    Dim myNewFormat As String
+    
+    myCurFormat = ActiveSheet.PivotTables(ActiveCell.PivotTable.Name).TableStyle2
+    myNewFormat = "PivotStyleMedium2"
+    
+    If myCurFormat = "PivotStyleMedium1" Then
+        myNewFormat = "PivotStyleMedium2"
+    End If
+    If myCurFormat = "PivotStyleMedium2" Then
+        myNewFormat = "PivotStyleMedium3"
+    End If
+    If myCurFormat = "PivotStyleMedium3" Then
+        myNewFormat = "PivotStyleMedium4"
+    End If
+    If myCurFormat = "PivotStyleMedium4" Then
+        myNewFormat = "PivotStyleMedium5"
+    End If
+    If myCurFormat = "PivotStyleMedium5" Then
+        myNewFormat = "PivotStyleMedium6"
+    End If
+    If myCurFormat = "PivotStyleMedium6" Then
+        myNewFormat = "PivotStyleMedium1"
+    End If
+    
+    ActiveSheet.PivotTables(ActiveCell.PivotTable.Name).TableStyle2 = myNewFormat
+    ActiveSheet.PivotTables(ActiveCell.PivotTable.Name).RowAxisLayout xlTabularRow
+    ActiveSheet.PivotTables(ActiveCell.PivotTable.Name).HasAutoFormat = False
+    
+End Sub
