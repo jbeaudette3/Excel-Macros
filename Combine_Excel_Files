@@ -1,0 +1,38 @@
+Sub CombineExcelFiles()
+'
+' 20204.09.25
+' Macro takes a folder of individual excel files
+' and combines them into a single workbook with separate tabs
+' using each file name as the tab name
+'
+
+Dim folderPath As String
+Dim fileName As String
+Dim wb As Workbook
+Dim ws As Worksheet
+Dim newWb As Workbook
+Dim lastRow As Long
+
+folderPath = "C:\Directory\To\Use\"
+Set newWb = Workbooks.Add
+fileName = Dir(folderPath & "*.xls*")
+
+Do While fileName <> ""
+    Set wb = Workbooks.Open(folderPath & fileName)
+    Set ws = newWb.Sheets.Add(After:=ActiveWorkbook.Sheets(ActiveWorkbook.Sheets.Count))
+    ws.Name = Left(fileName, InStr(fileName, " - ") - 1)
+    wb.Sheets(1).UsedRange.Copy ws.Cells(1, 1)
+    Range("A1").Select
+    Range(Selection, Selection.End(xlToRight)).Select
+    Selection.Columns.AutoFit
+    Range("A1").Select
+    wb.Close False
+    fileName = Dir
+Loop
+
+newWb.SaveAs folderPath & "Combined.xlsx"
+newWb.Close
+
+MsgBox "Success"
+
+End Sub
