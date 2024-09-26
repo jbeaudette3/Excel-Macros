@@ -1,0 +1,42 @@
+Sub combinepresentation()
+'
+' Macro takes a folder of individual powerpoint slides
+' and combines them into a single presentation.
+'
+
+
+Dim pptApp As Object
+Dim mainPresentation As Presentation
+Dim slideFile As String
+Dim slideFolder As String
+Dim slidePres As Presentation
+Dim slideCount As Long
+
+slideFolder = "C:\Directory\To\Use\"
+slideFile = Dir(slideFolder & "*.pptx")
+
+Set pptApp = CreateObject("PowerPoint.Application")
+pptApp.Visible = True
+
+Set mainPresentation = pptApp.Presentations.Add
+
+Do While slideFile <> ""
+    Set slidePres = pptApp.Presentations.Open(slideFolder & slideFile, ReadOnly:=msoTrue)
+    
+    For slideCount = 1 To slidePres.Slides.Count
+        slidePres.Slides(slideCount).Copy
+        mainPresentation.Slides.Paste
+    Next slideCount
+    
+    slidePres.Close
+    
+    slideFile = Dir
+Loop
+
+Set slidePres = Nothing
+Set mainPresentation = Nothing
+Set pptApp = Nothing
+
+MsgBox "Slides combined successfully."
+
+End Sub
