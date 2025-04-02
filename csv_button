@@ -23,7 +23,7 @@ Sub csv_button()
 ' Prefix-only list becomes an option if there are more than 'max_input' items.
 '
 ' 1. Variables.
-'    - max_input - Default 1000. This is dependant on Toad's input limit.
+'    - max_input - Default 1000. This is dependant on software's input limit.
 '    - msg1 - First pop-up message if paste area is not empty.
 '    - msg2 - Second pop-up message if there are more than 'max_input' items.
 '
@@ -46,6 +46,7 @@ Sub csv_button()
 '
 ' Notes:
 ' - if there are more than 1000 prefixes, only a single list is returned.
+' - Using a prefix is intended to get lots of items per 'ABC' or 'DEF'.
 '   (If you're going to query for more than 1000 prefixes,
 '    maybe reconsider your analytical approach.)
 '__________________________________________________________
